@@ -1,12 +1,28 @@
-from flask_sqlalchemy import SQLAlchemy
+from models import db
 
-db = SQLAlchemy()
+class User(db.Model):
 
-class user(db.model):
-    __tablename__ = 'users'
-    user_id = db.colomn(db.Integer, primary_key=True)  
-    name = db.colomn(db.String(100), nullable=False)
-    email = db.colomn(db.String(100), unique=True, nullable=False)
-    password_hash = db.colomn(db.String(255), nullable=False)
+    __tablename__ = "users"
 
-    created_at = db.colomn(db.DateTime, server_default=db.func.now())
+    user_id = db.Column(db.Integer, primary_key=True)
+
+    username = db.Column(
+        db.String(100),
+        nullable=False
+    )
+
+    email = db.Column(
+        db.String(120),
+        unique=True,
+        nullable=False
+    )
+
+    password = db.Column(
+        db.String(255),
+        nullable=False
+    )
+
+    created_at = db.Column(
+        db.DateTime,
+        server_default=db.func.now()
+    )
