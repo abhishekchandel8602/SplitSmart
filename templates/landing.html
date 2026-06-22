@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="hero">
+  <div><span class="eyebrow">Smart splitting for real life</span><h1>Money between friends<br>should feel <em>easy.</em></h1><p>From weekend trips to monthly rent, SplitSmart keeps every shared expense fair, clear, and drama-free.</p><div class="hero-actions"><a class="button" href="{{ url_for('auth.register') }}">Start splitting free</a><a class="text-link" href="{{ url_for('auth.login') }}">I have an account →</a></div></div>
+  <div class="hero-visual"><div class="floating-card card-one"><span>Dinner</span><strong>₹2,460</strong><small>Split between 4 friends</small></div><div class="floating-card card-two"><span>You are owed</span><strong class="positive">₹1,230</strong><small>All balances up to date</small></div><div class="orb">₹</div></div>
+</section>
+<section class="feature-strip">
+  <article><b>01</b><h3>Create a group</h3><p>Bring your trip, home, or event together.</p></article>
+  <article><b>02</b><h3>Add any expense</h3><p>Split equally, by percentage, or exact amounts.</p></article>
+  <article><b>03</b><h3>See the full picture</h3><p>Balances and insights update instantly.</p></article>
+</section>
+{% endblock %}

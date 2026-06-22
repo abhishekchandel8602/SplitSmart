@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Analytics · {{ group.name }}{% endblock %}
+{% block content %}
+<div class="page">
+  <section class="page-heading heading-row"><div><a class="back-link" href="{{ url_for('main.group_detail', group_id=group.group_id) }}">← Back to group</a><span class="eyebrow">Group insights</span><h1>{{ group.name }} analytics</h1><p>See where the money went and who covered it.</p></div><div class="analytics-total"><span>Total group spend</span><strong>{{ group.currency }}{{ "%.2f"|format(total) }}</strong></div></section>
+  {% if by_category %}
+  <div class="analytics-grid">
+    <article class="card chart-card"><span class="eyebrow">Spending mix</span><h2>By category</h2><div class="bar-chart">{% for label, amount in by_category %}<div class="bar-row"><div class="bar-label"><span>{{ label }}</span><b>{{ group.currency }}{{ "%.2f"|format(amount) }}</b></div><div class="bar-track"><div class="bar-fill" style="width: {{ (amount / max_category * 100)|round }}%"></div></div><small>{{ (amount / total * 100)|round(1) }}% of total</small></div>{% endfor %}</div></article>
+    <article class="card chart-card"><span class="eyebrow">Contributions</span><h2>Paid by member</h2><div class="contribution-list">{% for name, amount in paid_by %}<div><span class="avatar">{{ name[0]|upper }}</span><p><b>{{ name }}</b><small>{{ (amount / total * 100)|round(1) }}% of group spend</small></p><strong>{{ group.currency }}{{ "%.2f"|format(amount) }}</strong></div>{% endfor %}</div></article>
+    <article class="card chart-card span-two-card"><span class="eyebrow">Over time</span><h2>Monthly spending</h2><div class="month-chart">{% for label, amount in by_month %}<div class="month-column"><div class="month-value">{{ group.currency }}{{ "%.0f"|format(amount) }}</div><div class="vertical-track"><div class="vertical-bar" style="height: {{ (amount / max_month * 100)|round }}%"></div></div><span>{{ label }}</span></div>{% endfor %}</div></article>
+  </div>
+  {% else %}
+    <div class="empty-state"><div class="empty-icon">↗</div><h2>Insights need a little data</h2><p>Add some expenses and this page will turn them into useful patterns.</p><a class="button" href="{{ url_for('main.group_detail', group_id=group.group_id) }}">Add an expense</a></div>
+  {% endif %}
+</div>
+{% endblock %}

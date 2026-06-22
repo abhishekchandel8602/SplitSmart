@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}{{ group.name }} · SplitSmart{% endblock %}
+{% block content %}
+<div class="page">
+  <section class="group-hero">
+    <div><a class="back-link" href="{{ url_for('main.dashboard') }}">← All groups</a><span class="eyebrow">Shared group</span><h1>{{ group.name }}</h1><p>{{ group.description or "Good friends, clear balances." }}</p></div>
+    <div class="hero-actions"><a class="button button-ghost" href="{{ url_for('main.analytics', group_id=group.group_id) }}">View analytics</a><button class="button" data-modal-open="expense-modal">+ Add expense</button></div>
+  </section>
+  <section class="group-layout">
+    <div class="main-column">
+      <div class="section-heading"><div><h2>Recent expenses</h2><p>{{ expenses|length }} expenses recorded</p></div></div>
+      {% if expenses %}<div class="expense-list">
+        {% for expense in expenses %}<article class="expense-row"><div class="category-icon">{{ expense.category[0] }}</div><div class="expense-name"><h3>{{ expense.title }}</h3><p>{{ expense.expense_date.strftime("%d %b %Y") }} · {{ expense.paid_by.name }} paid</p></div><span class="pill">{{ expense.split_type }}</span><strong>{{ group.currency }}{{ "%.2f"|format(expense.amount) }}</strong></article>{% endfor %}
+      </div>{% else %}<div class="empty-state compact"><div class="empty-icon">+</div><h2>No expenses yet</h2><p>Add the first shared expense to start calculating balances.</p><button class="button" data-modal-open="expense-modal">Add expense</button></div>{% endif %}
+    </div>
+    <aside class="side-column">
+      <article class="card panel">
+        <div class="panel-heading"><div><span class="eyebrow">People</span><h2>{{ group.members|length }} members</h2></div><button class="icon-button" data-modal-open="member-modal">+</button></div>
+        <div class="member-list">{% for member in group.members %}<div class="member-row"><span class="avatar">{{ member.name[0]|upper }}</span><div><b>{{ member.name }}</b><small>{{ member.email or "Group member" }}</small></div><strong class="{{ 'positive' if balances[member.member_id] > 0 else 'negative' if balances[member.member_id] < 0 else '' }}">{{ group.currency }}{{ "%.2f"|format(balances[member.member_id]|abs) }}</strong></div>{% endfor %}</div>
+      </article>
+      <article class="card panel settlement-panel"><span class="eyebrow">Settle up</span><h2>Suggested payments</h2>
+        {% if suggestions %}{% for item in suggestions %}<div class="settlement-item"><p><b>{{ item.from_name }}</b> pays <b>{{ item.to_name }}</b></p><strong>{{ group.currency }}{{ "%.2f"|format(item.amount) }}</strong></div>{% endfor %}<button class="button button-full button-ghost" data-modal-open="settlement-modal">Record a payment</button>{% else %}<p class="all-set">✓ Everyone is settled up.</p>{% endif %}
+      </article>
+    </aside>
+  </section>
+</div>
+<div class="modal" id="member-modal"><div class="modal-card card"><button class="modal-close" data-modal-close>×</button><span class="eyebrow">Grow the group</span><h2>Add a friend</h2><form action="{{ url_for('main.add_member', group_id=group.group_id) }}" method="post"><label>Name<input name="name" placeholder="Friend's name" required></label><label>Email <small>(optional)</small><input type="email" name="email" placeholder="friend@example.com"></label><button class="button button-full">Add friend</button></form></div></div>
+<div class="modal" id="expense-modal"><div class="modal-card card modal-wide"><button class="modal-close" data-modal-close>×</button><span class="eyebrow">New expense</span><h2>What did you spend?</h2>
+  <form action="{{ url_for('main.add_expense', group_id=group.group_id) }}" method="post" id="expense-form">
+    <div class="form-grid"><label class="span-two">Title<input name="title" placeholder="Dinner at the beach" required></label><label>Amount<input type="number" name="amount" step="0.01" min="0.01" placeholder="0.00" required></label><label>Paid by<select name="paid_by_id">{% for member in group.members %}<option value="{{ member.member_id }}">{{ member.name }}</option>{% endfor %}</select></label><label>Category<select name="category">{% for category in categories %}<option>{{ category }}</option>{% endfor %}</select></label><label>Date<input type="date" name="expense_date" value="{{ today }}" required></label></div>
+    <fieldset><legend>Split method</legend><div class="segmented"><label><input type="radio" name="split_type" value="equal" checked><span>Equally</span></label><label><input type="radio" name="split_type" value="percentage"><span>Percentage</span></label><label><input type="radio" name="split_type" value="exact"><span>Exact amounts</span></label></div></fieldset>
+    <fieldset><legend>Split between</legend><div class="split-members">{% for member in group.members %}<div class="split-member"><label class="check-label"><input type="checkbox" name="member_ids" value="{{ member.member_id }}" checked><span class="avatar">{{ member.name[0]|upper }}</span><b>{{ member.name }}</b></label><input class="share-value" type="number" name="value_{{ member.member_id }}" step="0.01" min="0" placeholder="%" disabled></div>{% endfor %}</div><p class="split-hint">Equal split is calculated automatically.</p></fieldset>
+    <label>Note <small>(optional)</small><textarea name="notes" placeholder="Anything worth remembering?"></textarea></label><button class="button button-full">Add expense</button>
+  </form>
+</div></div>
+<div class="modal" id="settlement-modal"><div class="modal-card card"><button class="modal-close" data-modal-close>×</button><span class="eyebrow">Record payment</span><h2>Settle a balance</h2><form action="{{ url_for('main.add_settlement', group_id=group.group_id) }}" method="post"><label>From<select name="paid_by_id">{% for member in group.members %}<option value="{{ member.member_id }}">{{ member.name }}</option>{% endfor %}</select></label><label>To<select name="paid_to_id">{% for member in group.members %}<option value="{{ member.member_id }}">{{ member.name }}</option>{% endfor %}</select></label><label>Amount<input type="number" name="amount" min="0.01" step="0.01" required></label><label>Date<input type="date" name="settled_on" value="{{ today }}" required></label><button class="button button-full">Record payment</button></form></div></div>
+{% endblock %}

@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Dashboard · SplitSmart{% endblock %}
+{% block content %}
+<div class="page">
+  <section class="page-heading heading-row">
+    <div><span class="eyebrow">Your space</span><h1>Hello, {{ user.username.split()[0] }}.</h1><p>Here’s how your shared spending looks.</p></div>
+    <button class="button" data-modal-open="group-modal">+ New group</button>
+  </section>
+  <section class="stats-grid">
+    <article class="stat-card"><span>Total groups</span><strong>{{ cards|length }}</strong><small>Active shared spaces</small></article>
+    <article class="stat-card accent"><span>Total tracked</span><strong>₹{{ "%.2f"|format(total_spend) }}</strong><small>Across all your groups</small></article>
+  </section>
+  <section class="section-heading"><div><h2>Your groups</h2><p>Everything shared, in one place.</p></div></section>
+  {% if cards %}
+    <div class="group-grid">
+      {% for card in cards %}
+        <a class="group-card" href="{{ url_for('main.group_detail', group_id=card.group.group_id) }}">
+          <div class="group-icon">{{ card.group.name[0]|upper }}</div><div class="group-card-top"><span>{{ card.group.members|length }} members</span><span>→</span></div>
+          <h3>{{ card.group.name }}</h3><p>{{ card.group.description or "A shared space for your expenses." }}</p>
+          <div class="group-card-foot"><span>Tracked <b>{{ card.group.currency }}{{ "%.2f"|format(card.spend) }}</b></span><span class="{{ 'positive' if card.balance >= 0 else 'negative' }}">{{ 'owed to you' if card.balance > 0 else 'your balance' }} {{ card.group.currency }}{{ "%.2f"|format(card.balance|abs) }}</span></div>
+        </a>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="empty-state"><div class="empty-icon">◎</div><h2>Your first group starts here</h2><p>Create a group for a trip, flat, party, or anything you share.</p><button class="button" data-modal-open="group-modal">Create a group</button></div>
+  {% endif %}
+</div>
+<div class="modal" id="group-modal"><div class="modal-card card">
+  <button class="modal-close" data-modal-close>×</button><span class="eyebrow">New shared space</span><h2>Create a group</h2>
+  <form action="{{ url_for('main.create_group') }}" method="post"><label>Group name<input name="name" placeholder="Goa weekend" required></label><label>Description<input name="description" placeholder="Sun, food, and questionable decisions"></label><label>Currency<select name="currency"><option value="₹">₹ INR</option><option value="$">$ USD</option><option value="€">€ EUR</option><option value="£">£ GBP</option></select></label><button class="button button-full">Create group</button></form>
+</div></div>
+{% endblock %}
